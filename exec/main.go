@@ -12,10 +12,12 @@ func main() {
 	if err := s.Run(); err != nil {
 		log.Fatal(err)
 	}
+	//defer s.Stop()
 }
 
 func initDependencies() server.Server {
 	log, _ := zap.NewDevelopment()
-	config := config.InitConfig()
-	return server.InitHTTPServer(config, log)
+	//config := config.InitConfig()
+
+	return server.InitHTTPServer(config.Config{}, log)
 }

@@ -1,13 +1,8 @@
 package about
 
-type Abouts struct {
-	About     []*AboutContent
-	TimeStamp int
-}
-
-type AboutContent struct {
+type About struct {
+	Numbers int    `json:"number"`
 	Title   string `json:"title"`
 	Intro   string `json:"intro"`
-	Picture string `json:"pictures"`
-	Number  int    `json:"number"`
+	Picture string `json:"picture"`
 }
