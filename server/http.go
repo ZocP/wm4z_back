@@ -7,6 +7,7 @@ import (
 	"wm4z_back/config"
 	"wm4z_back/server/apps"
 	"wm4z_back/server/apps/services/about"
+	"wm4z_back/server/apps/services/calendar"
 	"wm4z_back/server/apps/services/tour"
 )
 
@@ -43,11 +44,14 @@ func (s *HTTPServer) regControllers(config config.Config) {
 	s.appsController = make(map[string]apps.AppController)
 	s.appsController["about"] = about.InitAboutController(config, s.log)
 	s.appsController["tour"] = tour.InitTourController(config, s.log)
+	s.appsController["calendar"] = calendar.InitCalendarController(config, s.log)
 }
 
 func (s *HTTPServer) regHandlers() {
 	s.engine.Use(Cors())
 	s.engine.GET("/about", s.appsController["about"].GetHandler())
+	s.engine.GET("/tour", s.appsController["tour"].GetHandler())
+	s.engine.GET("calendar", s.appsController["calendar"].GetHandler())
 }
 
 //跨域

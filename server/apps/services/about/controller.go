@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"wm4z_back/config"
+	"wm4z_back/server/apps"
 )
 
 type AboutController struct {
@@ -34,22 +35,22 @@ func (a *AboutController) GetHandler() gin.HandlerFunc {
 		f, exist1 := ctx.GetQuery("from")
 		t, exist2 := ctx.GetQuery("to")
 		if !exist1 || !exist2 {
-			ctx.JSON(http.StatusBadRequest, ErrorResponse(fmt.Errorf("invalid query")))
+			ctx.JSON(http.StatusBadRequest, apps.ErrorResponse(fmt.Errorf("invalid query")))
 			return
 		}
 
 		from, to, valid := parseContent(f, t)
 		if !valid {
-			ctx.JSON(http.StatusBadRequest, ErrorResponse(fmt.Errorf("invalid query parameters")))
+			ctx.JSON(http.StatusBadRequest, apps.ErrorResponse(fmt.Errorf("invalid query parameters")))
 		}
 
 		ok, result := a.getAbouts(from, to)
 		if !ok {
-			ctx.JSON(http.StatusNotFound, ErrorResponse(fmt.Errorf("didn't found match record")))
+			ctx.JSON(http.StatusNotFound, apps.ErrorResponse(fmt.Errorf("didn't found match record")))
 			return
 		}
 
-		ctx.JSON(http.StatusOK, SuccessResponse(result))
+		ctx.JSON(http.StatusOK, apps.SuccessResponse(result))
 	}
 }
 
@@ -60,21 +61,6 @@ func (a *AboutController) getAbouts(from int, to int) (bool, []About) {
 		return true, records
 	}
 	return false, nil
-
-}
-
-type AboutResponse struct {
-	Code     int         `json:"code"`
-	ErrorMsg string      `json:"error"`
-	Data     interface{} `json:"data"`
-}
-
-func ErrorResponse(err error) *AboutResponse {
-	return &AboutResponse{Code: -1, ErrorMsg: err.Error()}
-}
-
-func SuccessResponse(data interface{}) *AboutResponse {
-	return &AboutResponse{Code: 0, ErrorMsg: "ok", Data: data}
 }
 
 func parseContent(f string, t string) (int, int, bool) {
