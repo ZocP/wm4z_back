@@ -8,8 +8,8 @@ type AppController interface {
 
 type Response struct {
 	Code     int         `json:"code"`
-	ErrorMsg string      `json:"error"`
-	Data     interface{} `json:"data"`
+	ErrorMsg string      `json:"status"`
+	Data     interface{} `json:"Data"`
 }
 
 func ErrorResponse(err error) *Response {

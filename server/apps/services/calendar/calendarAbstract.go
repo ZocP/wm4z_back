@@ -1,8 +1,8 @@
 package calendar
 
 type Event struct {
-	Year  int
-	Month int
-	Date  int
-	Event string
+	Year  int    `json:"year"`
+	Month int    `json:"month"`
+	Date  int    `json:"date"`
+	Event string `json:"event"`
 }

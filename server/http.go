@@ -51,7 +51,7 @@ func (s *HTTPServer) regHandlers() {
 	s.engine.Use(Cors())
 	s.engine.GET("/about", s.appsController["about"].GetHandler())
 	s.engine.GET("/tour", s.appsController["tour"].GetHandler())
-	s.engine.GET("calendar", s.appsController["calendar"].GetHandler())
+	s.engine.GET("/calendar", s.appsController["calendar"].GetHandler())
 }
 
 //跨域

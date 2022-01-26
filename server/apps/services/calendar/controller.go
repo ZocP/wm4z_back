@@ -23,17 +23,20 @@ func (c CalendarController) GetHandler() gin.HandlerFunc {
 		month, exist := ctx.GetQuery("month")
 		if !exist {
 			ctx.JSON(http.StatusBadRequest, apps.ErrorResponse(fmt.Errorf("invalid query")))
+			return
 		}
 
 		valid, m := parseMonth(month)
 		if !valid {
 			ctx.JSON(http.StatusBadRequest, apps.ErrorResponse(fmt.Errorf("invalid param")))
+			return
 		}
 
 		ok, result := c.getMonth(m)
 
 		if !ok {
 			ctx.JSON(http.StatusNotFound, apps.ErrorResponse(fmt.Errorf("didn't find any record")))
+			return
 		}
 
 		ctx.JSON(http.StatusOK, apps.SuccessResponse(result))
