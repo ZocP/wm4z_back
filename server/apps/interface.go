@@ -1,11 +1,5 @@
 package apps
 
-import "github.com/gin-gonic/gin"
-
-type AppController interface {
-	GetHandler() gin.HandlerFunc
-}
-
 type Response struct {
 	Code     int         `json:"code"`
 	ErrorMsg string      `json:"status"`

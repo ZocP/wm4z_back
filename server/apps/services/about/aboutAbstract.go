@@ -1,8 +1,8 @@
 package about
 
 type About struct {
-	Numbers int    `json:"number"`
-	Title   string `json:"title"`
-	Intro   string `json:"intro"`
-	Picture string `json:"picture"`
+	Numbers int    `json:"Number"`
+	Title   string `json:"Title"`
+	Intro   string `json:"Intro"`
+	Picture string `json:"Picture"`
 }

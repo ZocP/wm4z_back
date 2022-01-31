@@ -3,22 +3,14 @@ package calendar
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
-	"wm4z_back/config"
 	"wm4z_back/server/apps"
+	"wm4z_back/server/apps/content"
 )
 
-type CalendarController struct {
-	log    *zap.Logger
-	config config.Config
-	db     *gorm.DB
-}
-
-func (c CalendarController) GetHandler() gin.HandlerFunc {
+func CalendarHandler(content *content.Content) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		month, exist := ctx.GetQuery("month")
 		if !exist {
@@ -32,7 +24,7 @@ func (c CalendarController) GetHandler() gin.HandlerFunc {
 			return
 		}
 
-		ok, result := c.getMonth(m)
+		ok, result := getMonth(content.Db, m)
 
 		if !ok {
 			ctx.JSON(http.StatusNotFound, apps.ErrorResponse(fmt.Errorf("didn't find any record")))
@@ -43,18 +35,6 @@ func (c CalendarController) GetHandler() gin.HandlerFunc {
 	}
 }
 
-func InitCalendarController(config config.Config, log *zap.Logger) *CalendarController {
-	dsn := "zocp:Student@725@tcp(rm-uf60p6k023ue0dsmiio.mysql.rds.aliyuncs.com:3306)/wm4z"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Error("connecting to database: ", zap.Error(err))
-	}
-	return &CalendarController{
-		config: config,
-		db:     db,
-	}
-}
-
 func parseMonth(s string) (bool, int) {
 	if r, err := strconv.Atoi(s); err == nil {
 		return true, r
@@ -62,9 +42,9 @@ func parseMonth(s string) (bool, int) {
 	return false, -1
 }
 
-func (c *CalendarController) getMonth(month int) (bool, interface{}) {
+func getMonth(db *gorm.DB, month int) (bool, interface{}) {
 	var record []Event
-	c.db.Where("Month = ? ", month).Find(&record)
+	db.Where("Month = ? ", month).Find(&record)
 	if len(record) != 0 {
 		return true, record
 	}

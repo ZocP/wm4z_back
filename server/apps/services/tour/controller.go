@@ -1,44 +1,74 @@
 package tour
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"wm4z_back/config"
+	"net/http"
+	"strconv"
+	"wm4z_back/server/apps"
+	"wm4z_back/server/apps/content"
 )
 
-type TourController struct {
-	log    *zap.Logger
-	config config.Config
-	db     *gorm.DB
-}
-
-func (t *TourController) GetHandler() gin.HandlerFunc {
+func TourHandler(ctn *content.Content) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		floor, exist := ctx.GetQuery("floor")
+		fl, ok := parseFloor(floor)
+		if !exist || !ok {
+			ctx.JSON(http.StatusBadRequest, apps.ErrorResponse(fmt.Errorf("invalid query")))
+			return
+		}
 
+		result, ok := search(ctn.Db, fl)
+		if !ok {
+			ctx.JSON(http.StatusOK, apps.ErrorResponse(fmt.Errorf("didn't found records match the requirement")))
+			return
+		}
+
+		ctx.JSON(http.StatusOK, apps.SuccessResponse(result))
 	}
 }
+func parseContent(f string, t string) (int, int, bool) {
+	from, err1 := strconv.Atoi(f)
+	to, err2 := strconv.Atoi(t)
+	if err1 != nil && err2 != nil {
+		return -1, -1, false
+	}
+	if to-from < 0 || to-from > 50 {
+		return -1, -1, false
+	}
+	return from, to, true
+}
 
-func InitTourController(config config.Config, log *zap.Logger) *TourController {
+func search(db *gorm.DB, floor int) (*Floor, bool) {
 
-	dsn := "zocp:Student@725@tcp(rm-uf60p6k023ue0dsmiio.mysql.rds.aliyuncs.com:3306)/wm4z"
-	//dsn := getDSN(config)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	var records []Position
+	db.Where("FloorNumber = ?", floor).Find(&records)
+	if len(records) != 0 {
+		return &Floor{
+			FloorNumber: floor,
+			Positions:   records,
+		}, true
+	}
+	return nil, false
+}
+
+func searchFloor(db *gorm.DB, f int) (int, bool) {
+	var records []Position
+	db.Where("FloorNumber = ?", f).Find(&records)
+	if len(records) != 0 {
+		return len(records), true
+	}
+	return -1, false
+}
+
+func parseFloor(floor string) (int, bool) {
+	f, err := strconv.Atoi(floor)
+	if f > 2 {
+		return -1, false
+	}
 	if err != nil {
-		log.Error("connecting to database: ", zap.Error(err))
+		return -1, false
 	}
-	return &TourController{
-		config: config,
-		db:     db,
-	}
-}
-
-func getDSN(config config.Config) string {
-	un := config.Services.About.DB.UserName
-	pc := config.Services.About.DB.Password
-	prtc := config.Services.About.DB.Protocol
-	url := config.Services.About.DB.URL
-	dn := config.Services.About.DB.DBName
-	return un + ":" + pc + "@" + prtc + "(" + url + ")/" + dn
+	return f, true
 }

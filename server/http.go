@@ -5,17 +5,17 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"wm4z_back/config"
-	"wm4z_back/server/apps"
+	"wm4z_back/server/apps/content"
 	"wm4z_back/server/apps/services/about"
 	"wm4z_back/server/apps/services/calendar"
 	"wm4z_back/server/apps/services/tour"
 )
 
 type HTTPServer struct {
-	appsController map[string]apps.AppController
-	config         config.Config
-	log            *zap.Logger
-	engine         *gin.Engine
+	config config.Config
+	log    *zap.Logger
+	engine *gin.Engine
+	ctn    *content.Content
 }
 
 func (s *HTTPServer) Run() error {
@@ -34,24 +34,17 @@ func InitHTTPServer(config config.Config, logger *zap.Logger) Server {
 		config: config,
 		log:    logger,
 		engine: gin.Default(),
+		ctn:    content.InitContent(config, logger),
 	}
-	s.regControllers(config)
 	s.regHandlers()
 	return s
 }
 
-func (s *HTTPServer) regControllers(config config.Config) {
-	s.appsController = make(map[string]apps.AppController)
-	s.appsController["about"] = about.InitAboutController(config, s.log)
-	s.appsController["tour"] = tour.InitTourController(config, s.log)
-	s.appsController["calendar"] = calendar.InitCalendarController(config, s.log)
-}
-
 func (s *HTTPServer) regHandlers() {
 	s.engine.Use(Cors())
-	s.engine.GET("/about", s.appsController["about"].GetHandler())
-	s.engine.GET("/tour", s.appsController["tour"].GetHandler())
-	s.engine.GET("/calendar", s.appsController["calendar"].GetHandler())
+	s.engine.GET("/about", about.AboutHandler(s.ctn))
+	s.engine.GET("/tour", tour.TourHandler(s.ctn))
+	s.engine.GET("/calendar", calendar.CalendarHandler(s.ctn))
 }
 
 //跨域
