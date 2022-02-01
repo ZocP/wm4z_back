@@ -17,7 +17,6 @@ func main() {
 
 func initDependencies() server.Server {
 	log, _ := zap.NewDevelopment()
-	//config := config.InitConfig()
-
-	return server.InitHTTPServer(config.Config{}, log)
+	config := config.InitConfig()
+	return server.InitHTTPServer(config, log)
 }

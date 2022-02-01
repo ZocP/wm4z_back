@@ -14,7 +14,8 @@ type Content struct {
 }
 
 func InitContent(config config.Config, log *zap.Logger) *Content {
-	dsn := "zocp:Student@725@tcp(rm-uf60p6k023ue0dsmiio.mysql.rds.aliyuncs.com:3306)/wm4z"
+	dsn := getDSN(config)
+	//dsn := "zocp:Student@725@tcp(rm-uf60p6k023ue0dsmiio.mysql.rds.aliyuncs.com:3306)/wm4z"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Error("connecting to database: ", zap.Error(err))
@@ -26,10 +27,10 @@ func InitContent(config config.Config, log *zap.Logger) *Content {
 }
 
 func getDSN(config config.Config) string {
-	un := config.Services.About.DB.UserName
-	pc := config.Services.About.DB.Password
-	prtc := config.Services.About.DB.Protocol
-	url := config.Services.About.DB.URL
-	dn := config.Services.About.DB.DBName
+	un := config.Services.DB.UserName
+	pc := config.Services.DB.Password
+	prtc := config.Services.DB.Protocol
+	url := config.Services.DB.URL
+	dn := config.Services.DB.DBName
 	return un + ":" + pc + "@" + prtc + "(" + url + ")/" + dn
 }

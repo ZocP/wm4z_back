@@ -1,22 +1,21 @@
 package config
 
-import "log"
+import (
+	"bufio"
+	"encoding/json"
+	"io/ioutil"
+	"log"
+	"os"
+)
 
 type Config struct {
-	Server struct {
-	}
 	Services struct {
-		About struct {
-			DB struct {
-				URL      string
-				UserName string
-				Password string
-				Protocol string
-				DBName   string
-			}
-			MaxQuerySize int `json:"max_query_size"`
-		}
-		Calendar struct {
+		DB struct {
+			URL      string `json:"URL"`
+			UserName string `json:"UserName"`
+			Password string `json:"Password"`
+			Protocol string `json:"Protocol"`
+			DBName   string `json:"DBName"`
 		}
 	}
 }
@@ -24,12 +23,6 @@ type Config struct {
 //TODO:添加config文件初始化，读取失败panic
 
 func InitConfig() Config {
-	exist := haveConfig()
-	if !exist {
-		initNewConfigFile()
-		log.Fatal("file doesn't exist, initializing new config file. please fill up configs then restart the server.")
-	}
-
 	config, ok := readFromFiles()
 	if !ok {
 		log.Fatal("Invalid Config")
@@ -38,13 +31,62 @@ func InitConfig() Config {
 }
 
 func readFromFiles() (Config, bool) {
-	return Config{}, false
+	var config Config
+	path := "./files/"
+	if !pathExists(path) {
+		if err := os.MkdirAll(path, 0777); err != nil {
+			log.Println("making path: ", err)
+		}
+	}
+	if !pathExists(path + "config.json") {
+		makeBlankConfig(path + "config.json")
+		log.Fatal("generated new file, please fill in the config.")
+		return Config{}, false
+	}
+	f, err := os.Open(path + "config.json")
+	defer f.Close()
+	if err != nil {
+		log.Fatal("open file error")
+	}
+	raw, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Fatal("reading from file: ", err)
+	}
+	if err := json.Unmarshal(raw, &config); err != nil {
+		log.Fatal("reading: ", err)
+	}
+	return config, true
 }
 
-func initNewConfigFile() {
+func makeBlankConfig(path string) {
+	f, err := os.Create(path)
+	defer f.Close()
 
+	if err != nil {
+		return
+	}
+	writer := bufio.NewWriter(f)
+	var c Config
+	c.Services.DB.URL = ""
+	c.Services.DB.DBName = ""
+	c.Services.DB.Protocol = ""
+	c.Services.DB.Password = ""
+	c.Services.DB.UserName = ""
+	raw, err := json.Marshal(c)
+	if err != nil {
+		log.Fatal("writing config:", err)
+	}
+	_, err = writer.Write(raw)
+	if err != nil {
+		log.Fatal("writing config:", err)
+	}
+	writer.Flush()
 }
 
-func haveConfig() bool {
+func pathExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
 	return false
 }
