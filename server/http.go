@@ -36,6 +36,7 @@ func InitHTTPServer(config config.Config, logger *zap.Logger) Server {
 		engine: gin.Default(),
 		ctn:    content.InitContent(config, logger),
 	}
+	gin.SetMode(gin.ReleaseMode)
 	s.regHandlers()
 	return s
 }
