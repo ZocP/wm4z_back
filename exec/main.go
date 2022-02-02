@@ -12,6 +12,7 @@ func main() {
 	if err := s.Run(); err != nil {
 		log.Fatal(err)
 	}
+	//defer s.Stop()
 }
 
 func initDependencies() server.Server {

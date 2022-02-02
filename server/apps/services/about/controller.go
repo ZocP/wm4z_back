@@ -1,59 +1,57 @@
 package about
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
+
 	"net/http"
-	"wm4z_back/config"
+	"strconv"
+	"wm4z_back/server/apps"
+	"wm4z_back/server/apps/content"
 )
 
-type AboutController struct {
-	log 	*zap.Logger
-	config config.Config
-	db 		*gorm.DB
-}
-
-func InitAboutController(config config.Config) *AboutController{
-	dsn := "zocp:Student@725@tcp(rm-uf60p6k023ue0dsmiio.mysql.rds.aliyuncs.com"
-	db, err := gorm.Open("zocp:Student@725@tcp(rm-uf60p6k023ue0dsmiio.mysql.rds.aliyuncs.com)",&gorm.Config{})
-	return &AboutController{
-		config: config,
-		db : ,
-	}
-}
-
-func (a *AboutController) GetHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context){
-		content, exist := ctx.Get("fromTo")
-		if !exist{
-			ctx.JSON(http.StatusBadRequest,ErrorResponse)
+func AboutHandler(ctn *content.Content) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		f, exist1 := ctx.GetQuery("from")
+		t, exist2 := ctx.GetQuery("to")
+		if !exist1 || !exist2 {
+			ctx.JSON(http.StatusBadRequest, apps.ErrorResponse(fmt.Errorf("invalid query")))
 			return
 		}
-		from ,to := parseContent(content)
 
+		from, to, valid := parseContent(f, t)
+		if !valid {
+			ctx.JSON(http.StatusBadRequest, apps.ErrorResponse(fmt.Errorf("invalid query parameters")))
+		}
 
+		ok, result := getAbouts(ctn.Db, from, to)
+		if !ok {
+			ctx.JSON(http.StatusNotFound, apps.ErrorResponse(fmt.Errorf("didn't found match record")))
+			return
+		}
+
+		ctx.JSON(http.StatusOK, apps.SuccessResponse(result))
 	}
 }
 
-func (a *AboutController) getAbouts(from int, to int) Abouts{
-
+func getAbouts(db *gorm.DB, from int, to int) (bool, []About) {
+	var records []About
+	db.Where("Numbers BETWEEN ? AND ?", from, to).Find(&records)
+	if len(records) != 0 {
+		return true, records
+	}
+	return false, nil
 }
 
-type AboutResponse struct {
-	Code int `json:"code"`
-	ErrorMsg string `json:"error"`
-	Data interface{}
-}
-
-func ErrorResponse(err error) *AboutResponse {
-	return &AboutResponse{Code: -1, ErrorMsg: err.Error()}
-}
-
-func SuccessResponse(data interface{}) *AboutResponse {
-	return &AboutResponse{Code: 0, ErrorMsg: "ok", Data: data}
-}
-
-func parseContent(ctn interface{})(int, int){
-	return 1,5
+func parseContent(f string, t string) (int, int, bool) {
+	from, err1 := strconv.Atoi(f)
+	to, err2 := strconv.Atoi(t)
+	if err1 != nil && err2 != nil {
+		return -1, -1, false
+	}
+	if to-from < 0 || to-from > 50 {
+		return -1, -1, false
+	}
+	return from, to, true
 }
