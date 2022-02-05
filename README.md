@@ -7,5 +7,6 @@ Notice: Frontend please check the front end repository: https://github.com/ZocP/
 Database: MySQL
 Programming language: Golang 1.17
 Package used: Gin, GORM
+Deployment container: Docker
 
 ### Complete log can be checked via commit.
