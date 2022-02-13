@@ -1,7 +1,9 @@
-FROM golang
+FROM alpine
 
-COPY ./hello /tmp/hello
+COPY ./main /
+COPY ./files /files
 
-WORKDIR /tmp/hello
+WORKDIR /
 
-RUN chmod +x hello
+EXPOSE 8080
+CMD ["/main"]

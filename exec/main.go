@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"log"
 	"wm4z_back/config"
@@ -8,6 +9,7 @@ import (
 )
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	s := initDependencies()
 	if err := s.Run(); err != nil {
 		log.Fatal(err)

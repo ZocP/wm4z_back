@@ -24,7 +24,6 @@ type Config struct {
 
 func InitConfig() Config {
 	config, ok := readFromFiles()
-	log.Println("initalizing")
 	if !ok {
 		log.Println("Invalid Config")
 		os.Exit(1)
@@ -37,9 +36,9 @@ func readFromFiles() (Config, bool) {
 	path := "./files/"
 	log.Println(path)
 	if !pathExists(path) {
-		log.Println("exist")
 		if err := os.MkdirAll(path, 0777); err != nil {
 			log.Println("making path: ", err)
+			os.Exit(1)
 		}
 	}
 	if !pathExists(path + "config.json") {
@@ -52,18 +51,17 @@ func readFromFiles() (Config, bool) {
 	f, err := os.Open(path + "config.json")
 	defer f.Close()
 	if err != nil {
-
 		log.Println("open file error")
-		os.Exit(0)
+		os.Exit(-1)
 	}
 	raw, err := ioutil.ReadAll(f)
 	if err != nil {
 		log.Println("reading from file: ", err)
-		os.Exit(1)
 	}
 	if err := json.Unmarshal(raw, &config); err != nil {
 		log.Println("unmarshal from file: ", err)
-		os.Exit(1)
+		return config, false
+
 	}
 	return config, true
 }
@@ -94,6 +92,7 @@ func makeBlankConfig(path string) {
 }
 
 func pathExists(path string) bool {
+
 	_, err := os.Stat(path)
 	if err == nil {
 		return true

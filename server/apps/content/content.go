@@ -15,7 +15,6 @@ type Content struct {
 
 func InitContent(config config.Config, log *zap.Logger) *Content {
 	dsn := getDSN(config)
-	//dsn := "zocp:Student@725@tcp(rm-uf60p6k023ue0dsmiio.mysql.rds.aliyuncs.com:3306)/wm4z"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Error("connecting to database: ", zap.Error(err))
