@@ -75,11 +75,6 @@ func makeBlankConfig(path string) {
 	}
 	writer := bufio.NewWriter(f)
 	var c Config
-	c.Services.DB.URL = ""
-	c.Services.DB.DBName = ""
-	c.Services.DB.Protocol = ""
-	c.Services.DB.Password = ""
-	c.Services.DB.UserName = ""
 	raw, err := json.Marshal(c)
 	if err != nil {
 		log.Fatal("writing config:", err)
